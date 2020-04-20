@@ -1,4 +1,4 @@
-#once
+#pragma once
 
 #include <osmium/geom/coordinates.hpp>
 #include <osmium/geom/mercator_projection.hpp>
