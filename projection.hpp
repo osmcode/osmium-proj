@@ -49,16 +49,16 @@ class PROJ_Projection {
 
 public:
 
-    explicit Projection(const char* proj_string) :
+    explicit PROJ_Projection(const char* proj_string) :
         m_proj_string(proj_string),
         m_proj(make_proj(proj_string)) {
     }
 
-    explicit Projection(const std::string& proj_string) :
-        Projection(proj_string.c_str()) {
+    explicit PROJ_Projection(const std::string& proj_string) :
+        PROJ_Projection(proj_string.c_str()) {
     }
 
-    explicit Projection(int epsg) :
+    explicit PROJ_Projection(int epsg) :
         m_proj_string(std::string{"EPSG:"} + std::to_string(epsg)),
         m_proj((epsg == 4326 || epsg == 3857) ? nullptr
                                               : make_proj(m_proj_string.c_str())),
@@ -70,14 +70,14 @@ public:
      *
      * @pre Location must be in valid range (depends on projection used).
      */
-    Coordinates operator()(osmium::Location location) const {
+    osmium::geom::Coordinates operator()(osmium::Location location) const {
         if (m_epsg == 4326) {
-            return Coordinates{location.lon(), location.lat()};
+            return osmium::geom::Coordinates{location.lon(), location.lat()};
         }
 
         if (m_epsg == 3857) {
-            return Coordinates{detail::lon_to_x(location.lon()),
-                               detail::lat_to_y(location.lat())};
+            return osmium::geom::Coordinates{osmium::geom::detail::lon_to_x(location.lon()),
+                                             osmium::geom::detail::lat_to_y(location.lat())};
         }
 
         PJ_COORD from;
@@ -89,11 +89,15 @@ public:
         assert(m_proj);
         PJ_COORD to = proj_trans(m_proj.get(), PJ_FWD, from);
 
-        return Coordinates{to.xy.x, to.xy.y};
+        return osmium::geom::Coordinates{to.xy.x, to.xy.y};
     }
 
     int epsg() const noexcept {
         return m_epsg;
+    }
+
+    std::string proj_string() const {
+        return {};
     }
 
 }; // class PROJ_Projection
